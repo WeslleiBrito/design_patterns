@@ -1,15 +1,54 @@
 # -*- coding: UTF-8 -*-
+from abc import ABCMeta, abstractmethod
+
+
+class Estado_de_um_orcamento(object):
+    __meta__ = ABCMeta
+
+    @abstractmethod
+    def aplica_desconto_extra(self, orcamento):
+        pass
+
+
+class EM_APROVACAO(Estado_de_um_orcamento):
+    def aplica_desconto_extra(self, orcamento):
+        orcamento.adiciona_desconto_extra(orcamento.valor * 0.02)
+
+
+class APROVADO(Estado_de_um_orcamento):
+    def aplica_desconto_extra(self, orcamento):
+        orcamento.adiciona_desconto_extra(orcamento.valor * 0.05)
+
+
+class REPROVADO(Estado_de_um_orcamento):
+    def aplica_desconto_extra(self, orcamento):
+        raise Exception('Orçamentos reprovados não receberam desconto extra')
+
+
+class FINALIZADO(Estado_de_um_orcamento):
+    def aplica_desconto_extra(self, orcamento):
+        raise Exception('Orçamentos finalizados não receberam desconto extra')
+
+
 class Orcamento(object):
 
     def __init__(self):
         self.__itens = []
+        self.estado_atual = EM_APROVACAO()
+        self.__desconto_extra = 0
+
+    def aplica_desconto_extra(self):
+        self.estado_atual.aplica_desconto_extra(self)
+
+    def adiciona_desconto_extra(self, desconto):
+        self.__desconto_extra += desconto
 
     @property
     def valor(self):
         total = 0.0
         for item in self.__itens:
             total += item.valor
-        return total
+        return total - self.__desconto_extra
 
     @property
     def total_itens(self):
@@ -34,3 +73,17 @@ class Item(object):
     @property
     def nome(self):
         return self.__nome
+
+
+if __name__ == '__main__':
+    orcamento = Orcamento()
+
+    orcamento.adiciona_item(Item('ITEM 1', 100))
+    orcamento.adiciona_item(Item('ITEM 2', 50))
+    orcamento.adiciona_item(Item('ITEM 3', 400))
+
+    print(orcamento.valor)
+    orcamento.estado_atual = Orcamento.APROVADO
+    orcamento.aplica_desconto_extra()
+
+    print(orcamento.valor)
