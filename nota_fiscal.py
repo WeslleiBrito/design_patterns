@@ -1,5 +1,5 @@
 # _*_ coding: UTF-8 _*_
-
+from observadores import imprime, envia_por_email, salva_no_banco
 from datetime import date
 
 class Item(object):
@@ -18,7 +18,7 @@ class Item(object):
 
 class Nota_fiscal(object):
 
-    def __init__(self, razao_social, cnpj, itens, data_de_emissao=date.today(), detalhes=''):
+    def __init__(self, razao_social, cnpj, itens, data_de_emissao=date.today(), detalhes='', observadores=[]):
         self.__razao_social = razao_social
         self.__cnpj = cnpj
         self.__data_de_emissao = data_de_emissao
@@ -26,6 +26,9 @@ class Nota_fiscal(object):
             raise Exception('Os detalhes da nota não pode ter mais de 20 caracteres')
         self.__detalhes = detalhes
         self.__itens = itens
+
+        for observador in observadores:
+            observador(self)
 
     @property
     def razao_social(self):
@@ -52,6 +55,7 @@ if __name__ == '__main__':
         razao_social='Lincoln Informática LTDA',
         cnpj='15326431000301',
         itens=itens,
-        detalhes='Solução em automação'
+        detalhes='Solução em automação',
+        observadores=[imprime, envia_por_email, salva_no_banco]
     )
 
